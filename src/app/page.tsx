@@ -361,8 +361,8 @@ export default function App() {
         {/* Brand Header */}
         <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-extrabold text-sm shadow-sm">
-              L
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 shadow-sm flex items-center justify-center bg-slate-50">
+              <img src="/logo.png" alt="Labellr Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-sm font-bold text-slate-850 uppercase tracking-wider flex items-center gap-1.5">
