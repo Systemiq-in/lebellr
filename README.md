@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Labellr Design Studio & Printing Engine
+
+An industrial-grade, client-side label design studio and high-fidelity print generation workbench. Labellr enables organizations to map inventory databases, design pixel-perfect physical sticker sheets, and compile print-ready PDFs entirely in the browser with zero server overhead and complete data privacy.
+
+---
+
+## Key Features
+
+- **High-Performance Preview Canvas**: 
+  - Switch seamlessly between **Focused Card** mode (single card focus for lag-free, high-speed layout design) and **Full Sheet Grid** mode (full physical A4/thermal sheets with interactive selection).
+- **Resilient Logical Data Mappings**:
+  - Map dynamic labels to logical schemas (`sku`, `title`, `price`, `promoPrice`, `quantity`, `ingredients`, `expiry`, `zone`) to maintain layout stability across diverse inventory Excel/CSV uploads.
+- **Smart Compliance Block Text Scaling**:
+  - Dynamically computes and scales warning text/ingredients blocks on the fly using a canvas-level measurements cache, ensuring copy fits perfectly within boundary constraints without DOM thrashing.
+- **Vector-Level Barcode & QR Code Engine**:
+  - On-the-fly vector rendering for `Code 128`, `EAN-13`, `UPC-A`, and `QR Code` formats with real-time format validation.
+- **GHS Safety Symbol Mapping**:
+  - Automatically dynamically displays Globally Harmonized System (GHS) warning symbols based on safety indicators in your spreadsheet.
+- **Dynamic Styling & Accent Bands**:
+  - Set border colors dynamically using rules mapped to specific column values (e.g. green for "In Stock", orange for "Hazardous").
+- **Physical Grid Presets**:
+  - Preloaded with Avery standard sheets, custom matrices, and high-density industrial thermal sticker sheets.
+
+---
+
+## Tech Stack & Architecture
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router architecture).
+- **Styling**: Tailwind CSS with a curated, high-contrast professional dark-mode / minimalist theme.
+- **Spreadsheet Parsers**: PapaParse (CSV) & SheetJS/xlsx (Excel).
+- **Barcode & QR Engines**: Customized vector renderers & QRCode.js.
+- **Print Engine**: jspdf (Client-side PDF compiler).
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js (v18+)
+- npm / yarn / pnpm
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com MuhammadRamzy/labellr.git
+   cd labellr
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Build and Deploy
+
+To create a optimized production build:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Repository Setup & Contribution
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To push to the remote repository:
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+git remote add origin https://github.com/MuhammadRamzy/labellr.git
+git branch -M main
+git push -u origin main
+```
