@@ -204,10 +204,10 @@ export default function LandingPage() {
             <span className="text-2xl font-black text-white tracking-tighter uppercase">LABELLR</span>
           </div>
           <p className="text-sm font-medium max-w-md leading-relaxed text-slate-500">
-            The free, privacy-first, industrial-grade label design studio. Built by SystemIQ for modern logistics and manufacturing teams.
+            The free, privacy-first, industrial-grade label design studio. Developed and engineered by <a href="https://systemiq.in" target="_blank" rel="noopener noreferrer" className="text-slate-300 font-bold hover:text-cyan-400 transition-colors underline decoration-slate-600 underline-offset-4">SystemIQ.in</a>.
           </p>
           <div className="text-xs text-slate-600 font-semibold mt-4">
-            &copy; {new Date().getFullYear()} SystemIQ. All rights reserved.
+            &copy; {new Date().getFullYear()} SystemIQ.in. All rights reserved.
           </div>
         </div>
       </footer>
