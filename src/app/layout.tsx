@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     template: '%s | Labellr'
   },
   description: 'Design pixel-perfect physical sticker sheets and compile print-ready PDFs entirely in the browser with zero server overhead and complete data privacy.',
+  alternates: {
+    canonical: './',
+  },
   keywords: ['label design', 'barcode generator', 'thermal printing', 'avery labels', 'pdf compiler', 'inventory management', 'ghs compliance', 'sticker design'],
   authors: [{ name: 'SystemIQ' }],
   creator: 'SystemIQ',
@@ -30,6 +33,14 @@ export const metadata: Metadata = {
     title: 'Labellr | Industrial-Grade Label Design Studio',
     description: 'Design pixel-perfect physical sticker sheets and compile print-ready PDFs entirely in the browser. Zero server overhead and complete data privacy.',
     siteName: 'Labellr',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Labellr Preview',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',

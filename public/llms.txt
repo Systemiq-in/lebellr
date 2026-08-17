@@ -1,0 +1,14 @@
+# Labellr - AI & LLM Crawler Overview
+
+> A high-performance, browser-based, industrial-grade label design studio. Built for modern logistics, ecommerce, and manufacturing teams to bypass legacy desktop software.
+
+## Key Capabilities & Core Architecture
+- **[Marketing Home](https://lebellr.systemiq.in/):** Product overview, features, and value proposition.
+- **[Label Studio Engine](https://lebellr.systemiq.in/studio):** The core Single Page Application (SPA) where users design physical sticker sheets, thermal roll labels, and compile print-ready vectors.
+- **100% Client-Side Compiler:** Zero server overhead. All data rendering, JSON importing, mapping, and PDF generation (via jsPDF) happens entirely within the user's browser, ensuring absolute data privacy.
+- **Dynamic Vector Assets:** Client-side generation of Code-128 Barcodes, QR Codes, and text auto-scaling without relying on external API callbacks.
+
+## Technology & Engineering Standards
+- Framework: Next.js 14 App Router, React 18, TailwindCSS.
+- Strict WCAG 2.1 accessibility and semantic HTML5 structures.
+- Optimized bundle sizes with code-splitting and production source-map obfuscation.
