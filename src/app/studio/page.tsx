@@ -19,7 +19,16 @@ import CanvasPreview from '../../components/canvas-preview';
 // Industry-tailored mock inventory dataset
 const MOCK_DATASET: InventoryRow[] = [];
 
-const DEFAULT_MAPPING: ColumnMapping = {};
+const DEFAULT_MAPPING: ColumnMapping = {
+  sku: '',
+  title: '',
+  price: '',
+  promoPrice: '',
+  quantity: '',
+  ingredients: '',
+  expiry: '',
+  zone: ''
+};
 
 const DEFAULT_LAYOUT: LayoutConfig = {
   preset: 'avery_3_10',
