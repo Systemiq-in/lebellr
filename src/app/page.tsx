@@ -208,8 +208,13 @@ export default function LandingPage() {
           <p className="text-sm font-medium max-w-md leading-relaxed text-slate-500">
             The free, privacy-first, industrial-grade label design studio. Developed and engineered by <a href="https://systemiq.in" target="_blank" rel="noopener noreferrer" className="text-slate-300 font-bold hover:text-cyan-400 transition-colors underline decoration-slate-600 underline-offset-4">SystemIQ.in</a>.
           </p>
-          <div className="text-xs text-slate-600 font-semibold mt-4">
-            &copy; {new Date().getFullYear()} SystemIQ.in. All rights reserved.
+          <div className="flex flex-col md:flex-row items-center gap-4 text-xs text-slate-600 font-semibold mt-4">
+            <span>&copy; {new Date().getFullYear()} SystemIQ.in. All rights reserved.</span>
+            <span className="hidden md:inline text-slate-700">&bull;</span>
+            <div className="flex gap-4">
+              <Link href="/privacy" className="hover:text-cyan-600 transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-cyan-600 transition-colors">Terms of Service</Link>
+            </div>
           </div>
         </div>
       </footer>
