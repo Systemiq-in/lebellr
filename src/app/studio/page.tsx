@@ -253,10 +253,6 @@ export default function App() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return null; // Prevent SSR hydration mismatch
-  }
-
   // Update layout border sizes when physical dimensions change
   const handleLayoutConfigChange = (newConfig: LayoutConfig) => {
     setLayoutConfig(newConfig);
@@ -329,6 +325,10 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedLayerId]);
+
+  if (!mounted) {
+    return null; // Prevent SSR hydration mismatch
+  }
 
   const resetToDefaultSample = () => {
     if (window.confirm('Reset workspace to industry sample data? Any unsaved sheet or layers modifications will be lost.')) {

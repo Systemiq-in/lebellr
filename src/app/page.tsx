@@ -29,10 +29,10 @@ export default function LandingPage() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="fixed top-0 inset-x-0 border-b border-slate-200/50 bg-white/70 backdrop-blur-xl z-50"
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="flex justify-between items-center max-w-7xl mx-auto px-6 relative z-10 h-16">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Labellr Logo" className="w-10 h-10 rounded-lg shadow-sm object-cover" />
-            <span className="text-xl font-black tracking-tighter text-slate-900">LABELLR</span>
+            <img src="/logo.jpg" alt="Labellr Logo" className="h-10 w-auto rounded object-contain drop-shadow-sm" />
+            <span className="text-xl font-bold tracking-tight text-slate-800">Labellr</span>
           </div>
           <div className="flex items-center gap-6">
             <Link 
@@ -199,9 +199,11 @@ export default function LandingPage() {
       <footer className="bg-slate-900 py-16 text-center text-slate-400 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:24px_24px] opacity-10" />
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6 relative z-10">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Labellr Logo" className="w-12 h-12 rounded-xl shadow-lg object-cover" />
-            <span className="text-2xl font-black text-white tracking-tighter uppercase">LABELLR</span>
+          <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
+            <div className="flex items-center gap-4">
+              <img src="/logo.jpg" alt="Labellr Logo" className="h-12 w-auto rounded object-contain drop-shadow-md" />
+              <span className="text-2xl font-black text-white tracking-tighter uppercase">LABELLR</span>
+            </div>
           </div>
           <p className="text-sm font-medium max-w-md leading-relaxed text-slate-500">
             The free, privacy-first, industrial-grade label design studio. Developed and engineered by <a href="https://systemiq.in" target="_blank" rel="noopener noreferrer" className="text-slate-300 font-bold hover:text-cyan-400 transition-colors underline decoration-slate-600 underline-offset-4">SystemIQ.in</a>.
