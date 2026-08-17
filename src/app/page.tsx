@@ -31,10 +31,8 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-[10px] overflow-hidden border border-slate-200/60 shadow-sm bg-white flex items-center justify-center p-0.5">
-              <img src="/logo.png" alt="Labellr Logo" className="w-full h-full object-cover rounded-md" />
-            </div>
-            <span className="text-lg font-black tracking-tight text-slate-900">LABELLR</span>
+            <img src="/logo.png" alt="Labellr Logo" className="w-10 h-10 rounded-lg shadow-sm object-cover" />
+            <span className="text-xl font-black tracking-tighter text-slate-900">LABELLR</span>
           </div>
           <div className="flex items-center gap-6">
             <Link 
@@ -202,10 +200,8 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:24px_24px] opacity-10" />
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6 relative z-10">
           <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center p-0.5 opacity-80">
-              <img src="/logo.png" alt="Labellr Logo" className="w-full h-full object-cover rounded-md mix-blend-screen" />
-            </div>
-            <span className="text-xl font-black text-white tracking-tighter uppercase">LABELLR</span>
+            <img src="/logo.png" alt="Labellr Logo" className="w-12 h-12 rounded-xl shadow-lg object-cover" />
+            <span className="text-2xl font-black text-white tracking-tighter uppercase">LABELLR</span>
           </div>
           <p className="text-sm font-medium max-w-md leading-relaxed text-slate-500">
             The free, privacy-first, industrial-grade label design studio. Built by SystemIQ for modern logistics and manufacturing teams.

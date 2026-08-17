@@ -36,6 +36,11 @@ export const metadata: Metadata = {
     title: 'Labellr | Industrial-Grade Label Design Studio',
     description: 'Design pixel-perfect physical sticker sheets and compile print-ready PDFs entirely in the browser.',
   },
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   robots: {
     index: true,
     follow: true,
