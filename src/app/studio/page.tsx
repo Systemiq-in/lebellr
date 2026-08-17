@@ -17,89 +17,9 @@ import PreflightChecker from '../../components/preflight-checker';
 import CanvasPreview from '../../components/canvas-preview';
 
 // Industry-tailored mock inventory dataset
-const MOCK_DATASET: InventoryRow[] = [
-  {
-    __rowId: 'mock-1',
-    Item_SKU: '8809462-810012',
-    Product_Title: 'Hydrating Peptide Ceramide Cream',
-    Retail_Price: 42.00,
-    Promo_Price: 34.99,
-    Stock_Qty: 10,
-    Ingredients_List: 'Water, Glycerin, Caprylic/Capric Triglyceride, Niacinamide, Ceramide NP, Ceramide AP, Phytosphingosine, Cholesterol, Sodium Hyaluronate, Xanthan Gum, Phenoxyethanol, Ethylhexylglycerin.',
-    Expiry_Month: '11/2028',
-    Hazard_Flammable: 'FALSE',
-    Hazard_Toxic: 'FALSE',
-    Zone_Code: 'Zone-C',
-    Box_Size: 'M'
-  },
-  {
-    __rowId: 'mock-2',
-    Item_SKU: '8809462-810029',
-    Product_Title: 'Ultra Concentrated Salicylic Serum',
-    Retail_Price: 28.50,
-    Promo_Price: 0.00,
-    Stock_Qty: 5,
-    Ingredients_List: 'Propylene Glycol, Salicylic Acid (2.0%), Alcohol Denat., Tocopheryl Acetate, Melaleuca Alternifolia (Tea Tree) Leaf Oil, Limonene.',
-    Expiry_Month: '05/2027',
-    Hazard_Flammable: 'TRUE',
-    Hazard_Toxic: 'TRUE',
-    Zone_Code: 'Zone-A',
-    Box_Size: 'S'
-  },
-  {
-    __rowId: 'mock-3',
-    Item_SKU: '4901301-360098',
-    Product_Title: 'Organic Peppermint Essential Oil',
-    Retail_Price: 19.99,
-    Promo_Price: 14.50,
-    Stock_Qty: 12,
-    Ingredients_List: '100% Pure Mentha Piperita (Peppermint) Herb Oil. Warning: Keep out of reach of children. Dilute properly before applying to skin.',
-    Expiry_Month: '08/2029',
-    Hazard_Flammable: 'TRUE',
-    Hazard_Toxic: 'FALSE',
-    Zone_Code: 'Zone-A',
-    Box_Size: 'S'
-  },
-  {
-    __rowId: 'mock-4',
-    Item_SKU: '4901301-360155',
-    Product_Title: 'Premium Cocoa Butter Body Melt Balm',
-    Retail_Price: 35.00,
-    Promo_Price: 0.00,
-    Stock_Qty: 8,
-    Ingredients_List: 'Theobroma Cacao (Cocoa) Seed Butter, Butyrospermum Parkii (Shea) Butter, Cocos Nucifera (Coconut) Oil, Beeswax, Tocopherol.',
-    Expiry_Month: '02/2028',
-    Hazard_Flammable: 'FALSE',
-    Hazard_Toxic: 'FALSE',
-    Zone_Code: 'Zone-B',
-    Box_Size: 'L'
-  },
-  {
-    __rowId: 'mock-5',
-    Item_SKU: '4901301-360210',
-    Product_Title: 'Heavy-Duty Industrial Degreaser Spray',
-    Retail_Price: 59.99,
-    Promo_Price: 49.99,
-    Stock_Qty: 15,
-    Ingredients_List: 'Sodium Hydroxide, Ethylene Glycol Monobutyl Ether, Surfactants, Corrosion Inhibitors, Fragrance, Aqua. Corrosive mixture.',
-    Expiry_Month: '03/2030',
-    Hazard_Flammable: 'FALSE',
-    Hazard_Toxic: 'TRUE',
-    Zone_Code: 'Zone-C',
-    Box_Size: 'XL'
-  }
-];
+const MOCK_DATASET: InventoryRow[] = [];
 
-const DEFAULT_MAPPING: ColumnMapping = {
-  sku: 'Item_SKU',
-  title: 'Product_Title',
-  price: 'Retail_Price',
-  promoPrice: 'Promo_Price',
-  quantity: 'Stock_Qty',
-  ingredients: 'Ingredients_List',
-  expiry: 'Expiry_Month',
-  zone: 'Zone_Code'
-};
+const DEFAULT_MAPPING: ColumnMapping = {};
 
 const DEFAULT_LAYOUT: LayoutConfig = {
   preset: 'avery_3_10',
@@ -116,126 +36,12 @@ const DEFAULT_LAYOUT: LayoutConfig = {
   showBleed: true
 };
 
-const DEFAULT_LAYERS = (layout: LayoutConfig): Layer[] => [
-  // 1. Border Layer (Dynamic top-band based on Warehouse Zone)
-  {
-    id: 'layer-border-band',
-    name: 'Zone Color Band',
-    type: 'border',
-    visible: true,
-    x: 0,
-    y: 0,
-    width: layout.width,
-    height: layout.height,
-    borderType: 'top-band',
-    thickness: 2.5,
-    colorType: 'dynamic',
-    staticColor: '#4F46E5',
-    dynamicColumn: 'Zone_Code',
-    colorRules: [
-      { value: 'Zone-A', color: '#EF4444' }, // Red for hazardous/flammable zones
-      { value: 'Zone-B', color: '#10B981' }, // Green for general logistics
-      { value: 'Zone-C', color: '#3B82F6' }  // Blue for cosmetics cold-chain
-    ]
-  },
-  // 2. Product Name/Title Text Block
-  {
-    id: 'layer-title',
-    name: 'Product Name Text',
-    type: 'text',
-    visible: true,
-    x: 2.0,
-    y: 3.5,
-    width: 38.0,
-    height: 6.0,
-    template: '{{Product_Title}}',
-    fontSize: 7.5,
-    fontStyle: 'bold',
-    color: '#0F172A',
-    align: 'left'
-  },
-  // 3. Price Display (Promo Strikethrough)
-  {
-    id: 'layer-price',
-    name: 'Price Badge',
-    type: 'pricing',
-    visible: true,
-    x: 2.0,
-    y: 9.5,
-    width: 25.0,
-    height: 4.5,
-    priceColumn: 'Retail_Price',
-    promoColumn: 'Promo_Price',
-    currencySymbol: '$',
-    fontSize: '9.0',
-    color: '#475569',
-    promoColor: '#DC2626'
-  },
-  // 4. Ingredients Compliance Block (Auto Font Scaling)
-  {
-    id: 'layer-compliance',
-    name: 'Ingredients (Auto Scaled)',
-    type: 'compliance',
-    visible: true,
-    x: 2.0,
-    y: 14.5,
-    width: 38.0,
-    height: 9.5,
-    column: 'Ingredients_List',
-    heading: 'Ingr:',
-    fontSizeMax: 6.0,
-    fontSizeMin: 4.5,
-    color: '#334155'
-  },
-  // 5. GHS Hazard Symbols (Safety Mapping)
-  {
-    id: 'layer-ghs',
-    name: 'GHS Hazard Diamonds',
-    type: 'safety',
-    visible: true,
-    x: 43.5,
-    y: 3.5,
-    width: 18.0,
-    height: 6.0,
-    symbolSize: 4.8,
-    mappings: [
-      { column: 'Hazard_Flammable', symbol: 'flame', activeIf: 'true' },
-      { column: 'Hazard_Toxic', symbol: 'skull', activeIf: 'true' }
-    ]
-  },
-  // 6. Vector Barcode (Code 128)
-  {
-    id: 'layer-barcode',
-    name: 'Item Vector Barcode',
-    type: 'barcode',
-    visible: true,
-    x: 42.5,
-    y: 10.0,
-    width: 19.0,
-    height: 9.5,
-    column: 'Item_SKU',
-    format: 'code128',
-    includeText: true,
-    fontSize: 5.5
-  },
-  // 7. Vector QR Code (Prov tracking)
-  {
-    id: 'layer-qr',
-    name: 'Provenance QR Code',
-    type: 'qrcode',
-    visible: true,
-    x: 49.0,
-    y: 20.0,
-    width: 12.0,
-    height: 12.0,
-    template: 'https://trace.labellr.com/p/{{Item_SKU}}'
-  }
-];
+const DEFAULT_LAYERS = (layout: LayoutConfig): Layer[] => [];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'upload' | 'layout' | 'layers' | 'editor' | 'preflight'>('upload');
   const [rows, setRows] = useState<InventoryRow[]>(MOCK_DATASET);
-  const [headers, setHeaders] = useState<string[]>(Object.keys(MOCK_DATASET[0]).filter(k => !k.startsWith('__')));
+  const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<ColumnMapping>(DEFAULT_MAPPING);
   
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(DEFAULT_LAYOUT);
@@ -249,7 +55,6 @@ export default function App() {
   // Initialize with default layers
   useEffect(() => {
     setLayers(DEFAULT_LAYERS(DEFAULT_LAYOUT));
-    setSelectedLayerId(DEFAULT_LAYERS(DEFAULT_LAYOUT)[1].id); // Select name text layer
     setMounted(true);
   }, []);
 
@@ -330,18 +135,6 @@ export default function App() {
     return null; // Prevent SSR hydration mismatch
   }
 
-  const resetToDefaultSample = () => {
-    if (window.confirm('Reset workspace to industry sample data? Any unsaved sheet or layers modifications will be lost.')) {
-      setRows(MOCK_DATASET);
-      setHeaders(Object.keys(MOCK_DATASET[0]).filter(k => !k.startsWith('__')));
-      setMapping(DEFAULT_MAPPING);
-      setLayoutConfig(DEFAULT_LAYOUT);
-      setLayers(DEFAULT_LAYERS(DEFAULT_LAYOUT));
-      setSelectedLayerId(DEFAULT_LAYERS(DEFAULT_LAYOUT)[1].id);
-      setSelectedRowIndex(0);
-      setActiveTab('upload');
-    }
-  };
 
   // Compile PDF client-side
   const handleDownloadPDF = async () => {
@@ -382,15 +175,7 @@ export default function App() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={resetToDefaultSample}
-            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-650 hover:text-slate-900 text-[10px] font-bold flex items-center gap-1 transition-all duration-[160ms] ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] border border-slate-200"
-            title="Reset to industry demo template"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Reset Demo
-          </button>
+
         </div>
 
         {/* Tab Navigation */}
