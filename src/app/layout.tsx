@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   description: 'Design pixel-perfect physical sticker sheets and compile print-ready PDFs entirely in the browser with zero server overhead and complete data privacy.',
   alternates: {
-    canonical: './',
+    canonical: '/',
   },
   keywords: ['label design', 'barcode generator', 'thermal printing', 'avery labels', 'pdf compiler', 'inventory management', 'ghs compliance', 'sticker design'],
   authors: [{ name: 'SystemIQ' }],
