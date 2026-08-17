@@ -25,8 +25,11 @@ export type PresetType =
   | 'avery_2_5' 
   | 'custom';
 
+export type PageFormat = 'a4' | 'letter' | 'legal';
+
 export interface LayoutConfig {
   preset: PresetType;
+  pageFormat: PageFormat;
   unit: PhysicalUnit;
   width: number;
   height: number;

@@ -1,632 +1,241 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { 
-  FileSpreadsheet, Sliders, Layers, Settings, ShieldAlert, 
-  Download, Loader2, Sparkles, RefreshCw
-} from 'lucide-react';
-import { LayoutConfig, Layer, InventoryRow, ColumnMapping } from '../lib/types';
-import { generateLabelsPDF } from '../lib/pdf-generator';
+import React from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, CheckCircle2, Layers, Printer, ShieldCheck, Zap, Box, Code2 } from 'lucide-react';
 
-// Imported Components
-import DataUpload from '../components/data-upload';
-import LayoutSettings from '../components/layout-settings';
-import LayersManager from '../components/layers-manager';
-import LayerEditor from '../components/layer-editor';
-import PreflightChecker from '../components/preflight-checker';
-import CanvasPreview from '../components/canvas-preview';
-
-// Industry-tailored mock inventory dataset
-const MOCK_DATASET: InventoryRow[] = [
-  {
-    __rowId: 'mock-1',
-    Item_SKU: '8809462-810012',
-    Product_Title: 'Hydrating Peptide Ceramide Cream',
-    Retail_Price: 42.00,
-    Promo_Price: 34.99,
-    Stock_Qty: 10,
-    Ingredients_List: 'Water, Glycerin, Caprylic/Capric Triglyceride, Niacinamide, Ceramide NP, Ceramide AP, Phytosphingosine, Cholesterol, Sodium Hyaluronate, Xanthan Gum, Phenoxyethanol, Ethylhexylglycerin.',
-    Expiry_Month: '11/2028',
-    Hazard_Flammable: 'FALSE',
-    Hazard_Toxic: 'FALSE',
-    Zone_Code: 'Zone-C',
-    Box_Size: 'M'
-  },
-  {
-    __rowId: 'mock-2',
-    Item_SKU: '8809462-810029',
-    Product_Title: 'Ultra Concentrated Salicylic Serum',
-    Retail_Price: 28.50,
-    Promo_Price: 0.00,
-    Stock_Qty: 5,
-    Ingredients_List: 'Propylene Glycol, Salicylic Acid (2.0%), Alcohol Denat., Tocopheryl Acetate, Melaleuca Alternifolia (Tea Tree) Leaf Oil, Limonene.',
-    Expiry_Month: '05/2027',
-    Hazard_Flammable: 'TRUE',
-    Hazard_Toxic: 'TRUE',
-    Zone_Code: 'Zone-A',
-    Box_Size: 'S'
-  },
-  {
-    __rowId: 'mock-3',
-    Item_SKU: '4901301-360098',
-    Product_Title: 'Organic Peppermint Essential Oil',
-    Retail_Price: 19.99,
-    Promo_Price: 14.50,
-    Stock_Qty: 12,
-    Ingredients_List: '100% Pure Mentha Piperita (Peppermint) Herb Oil. Warning: Keep out of reach of children. Dilute properly before applying to skin.',
-    Expiry_Month: '08/2029',
-    Hazard_Flammable: 'TRUE',
-    Hazard_Toxic: 'FALSE',
-    Zone_Code: 'Zone-A',
-    Box_Size: 'S'
-  },
-  {
-    __rowId: 'mock-4',
-    Item_SKU: '4901301-360155',
-    Product_Title: 'Premium Cocoa Butter Body Melt Balm',
-    Retail_Price: 35.00,
-    Promo_Price: 0.00,
-    Stock_Qty: 8,
-    Ingredients_List: 'Theobroma Cacao (Cocoa) Seed Butter, Butyrospermum Parkii (Shea) Butter, Cocos Nucifera (Coconut) Oil, Beeswax, Tocopherol.',
-    Expiry_Month: '02/2028',
-    Hazard_Flammable: 'FALSE',
-    Hazard_Toxic: 'FALSE',
-    Zone_Code: 'Zone-B',
-    Box_Size: 'L'
-  },
-  {
-    __rowId: 'mock-5',
-    Item_SKU: '4901301-360210',
-    Product_Title: 'Heavy-Duty Industrial Degreaser Spray',
-    Retail_Price: 59.99,
-    Promo_Price: 49.99,
-    Stock_Qty: 15,
-    Ingredients_List: 'Sodium Hydroxide, Ethylene Glycol Monobutyl Ether, Surfactants, Corrosion Inhibitors, Fragrance, Aqua. Corrosive mixture.',
-    Expiry_Month: '03/2030',
-    Hazard_Flammable: 'FALSE',
-    Hazard_Toxic: 'TRUE',
-    Zone_Code: 'Zone-C',
-    Box_Size: 'XL'
-  }
-];
-
-const DEFAULT_MAPPING: ColumnMapping = {
-  sku: 'Item_SKU',
-  title: 'Product_Title',
-  price: 'Retail_Price',
-  promoPrice: 'Promo_Price',
-  quantity: 'Stock_Qty',
-  ingredients: 'Ingredients_List',
-  expiry: 'Expiry_Month',
-  zone: 'Zone_Code'
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 };
 
-const DEFAULT_LAYOUT: LayoutConfig = {
-  preset: 'avery_3_10',
-  unit: 'mm',
-  width: 63.5,
-  height: 25.4,
-  margin: 7.2,
-  cols: 3,
-  rows: 10,
-  colGap: 2.5,
-  rowGap: 0,
-  sheetOffset: 0,
-  showBleed: true
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15 }
+  }
 };
 
-const DEFAULT_LAYERS = (layout: LayoutConfig): Layer[] => [
-  // 1. Border Layer (Dynamic top-band based on Warehouse Zone)
-  {
-    id: 'layer-border-band',
-    name: 'Zone Color Band',
-    type: 'border',
-    visible: true,
-    x: 0,
-    y: 0,
-    width: layout.width,
-    height: layout.height,
-    borderType: 'top-band',
-    thickness: 2.5,
-    colorType: 'dynamic',
-    staticColor: '#4F46E5',
-    dynamicColumn: 'Zone_Code',
-    colorRules: [
-      { value: 'Zone-A', color: '#EF4444' }, // Red for hazardous/flammable zones
-      { value: 'Zone-B', color: '#10B981' }, // Green for general logistics
-      { value: 'Zone-C', color: '#3B82F6' }  // Blue for cosmetics cold-chain
-    ]
-  },
-  // 2. Product Name/Title Text Block
-  {
-    id: 'layer-title',
-    name: 'Product Name Text',
-    type: 'text',
-    visible: true,
-    x: 2.0,
-    y: 3.5,
-    width: 38.0,
-    height: 6.0,
-    template: '{{Product_Title}}',
-    fontSize: 7.5,
-    fontStyle: 'bold',
-    color: '#0F172A',
-    align: 'left'
-  },
-  // 3. Price Display (Promo Strikethrough)
-  {
-    id: 'layer-price',
-    name: 'Price Badge',
-    type: 'pricing',
-    visible: true,
-    x: 2.0,
-    y: 9.5,
-    width: 25.0,
-    height: 4.5,
-    priceColumn: 'Retail_Price',
-    promoColumn: 'Promo_Price',
-    currencySymbol: '$',
-    fontSize: '9.0',
-    color: '#475569',
-    promoColor: '#DC2626'
-  },
-  // 4. Ingredients Compliance Block (Auto Font Scaling)
-  {
-    id: 'layer-compliance',
-    name: 'Ingredients (Auto Scaled)',
-    type: 'compliance',
-    visible: true,
-    x: 2.0,
-    y: 14.5,
-    width: 38.0,
-    height: 9.5,
-    column: 'Ingredients_List',
-    heading: 'Ingr:',
-    fontSizeMax: 6.0,
-    fontSizeMin: 4.5,
-    color: '#334155'
-  },
-  // 5. GHS Hazard Symbols (Safety Mapping)
-  {
-    id: 'layer-ghs',
-    name: 'GHS Hazard Diamonds',
-    type: 'safety',
-    visible: true,
-    x: 43.5,
-    y: 3.5,
-    width: 18.0,
-    height: 6.0,
-    symbolSize: 4.8,
-    mappings: [
-      { column: 'Hazard_Flammable', symbol: 'flame', activeIf: 'true' },
-      { column: 'Hazard_Toxic', symbol: 'skull', activeIf: 'true' }
-    ]
-  },
-  // 6. Vector Barcode (Code 128)
-  {
-    id: 'layer-barcode',
-    name: 'Item Vector Barcode',
-    type: 'barcode',
-    visible: true,
-    x: 42.5,
-    y: 10.0,
-    width: 19.0,
-    height: 9.5,
-    column: 'Item_SKU',
-    format: 'code128',
-    includeText: true,
-    fontSize: 5.5
-  },
-  // 7. Vector QR Code (Prov tracking)
-  {
-    id: 'layer-qr',
-    name: 'Provenance QR Code',
-    type: 'qrcode',
-    visible: true,
-    x: 49.0,
-    y: 20.0,
-    width: 12.0,
-    height: 12.0,
-    template: 'https://trace.labellr.com/p/{{Item_SKU}}'
-  }
-];
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState<'upload' | 'layout' | 'layers' | 'editor' | 'preflight'>('upload');
-  const [rows, setRows] = useState<InventoryRow[]>(MOCK_DATASET);
-  const [headers, setHeaders] = useState<string[]>(Object.keys(MOCK_DATASET[0]).filter(k => !k.startsWith('__')));
-  const [mapping, setMapping] = useState<ColumnMapping>(DEFAULT_MAPPING);
-  
-  const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(DEFAULT_LAYOUT);
-  const [layers, setLayers] = useState<Layer[]>([]);
-  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
-  
-  const [selectedRowIndex, setSelectedRowIndex] = useState<number>(0);
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  // Initialize with default layers
-  useEffect(() => {
-    setLayers(DEFAULT_LAYERS(DEFAULT_LAYOUT));
-    setSelectedLayerId(DEFAULT_LAYERS(DEFAULT_LAYOUT)[1].id); // Select name text layer
-  }, []);
-
-  // Update layout border sizes when physical dimensions change
-  const handleLayoutConfigChange = (newConfig: LayoutConfig) => {
-    setLayoutConfig(newConfig);
-
-    // Update border layer geometry if present to cover the new label size
-    setLayers(prev => 
-      prev.map(l => 
-        l.type === 'border' && l.id === 'layer-border-band'
-          ? { ...l, width: newConfig.width, height: newConfig.height }
-          : l
-      )
-    );
-  };
-
-  const handleDataLoaded = (newRows: InventoryRow[], newHeaders: string[], autoMapping: ColumnMapping) => {
-    setRows(newRows);
-    setHeaders(newHeaders);
-    setMapping(autoMapping);
-    setSelectedRowIndex(0);
-    setActiveTab('layout'); // Advance tab to help flow
-  };
-
-  const handleSelectLayer = (id: string | null) => {
-    setSelectedLayerId(id);
-    if (id) {
-      setActiveTab('editor'); // Jump to editor for adjustments
-    }
-  };
-
-  const handleSingleLayerChange = (updatedLayer: Layer) => {
-    setLayers(prev => prev.map(l => l.id === updatedLayer.id ? updatedLayer : l));
-  };
-
-  // Keyboard layer nudge handler
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!selectedLayerId) return;
-
-      // Ignore nudging if user is typing in inputs, textareas, or dropdowns
-      const active = document.activeElement;
-      if (active) {
-        const tagName = active.tagName.toLowerCase();
-        if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
-          return;
-        }
-      }
-
-      const arrows = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-      if (!arrows.includes(e.key)) return;
-
-      e.preventDefault();
-      
-      const step = e.shiftKey ? 2.0 : 0.5;
-
-      setLayers(prev => prev.map(l => {
-        if (l.id !== selectedLayerId) return l;
-
-        let newX = l.x;
-        let newY = l.y;
-
-        if (e.key === 'ArrowLeft') newX = Math.max(0, Number((l.x - step).toFixed(2)));
-        if (e.key === 'ArrowRight') newX = Number((l.x + step).toFixed(2));
-        if (e.key === 'ArrowUp') newY = Math.max(0, Number((l.y - step).toFixed(2)));
-        if (e.key === 'ArrowDown') newY = Number((l.y + step).toFixed(2));
-
-        return { ...l, x: newX, y: newY };
-      }));
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedLayerId]);
-
-  const resetToDefaultSample = () => {
-    if (window.confirm('Reset workspace to industry sample data? Any unsaved sheet or layers modifications will be lost.')) {
-      setRows(MOCK_DATASET);
-      setHeaders(Object.keys(MOCK_DATASET[0]).filter(k => !k.startsWith('__')));
-      setMapping(DEFAULT_MAPPING);
-      setLayoutConfig(DEFAULT_LAYOUT);
-      setLayers(DEFAULT_LAYERS(DEFAULT_LAYOUT));
-      setSelectedLayerId(DEFAULT_LAYERS(DEFAULT_LAYOUT)[1].id);
-      setSelectedRowIndex(0);
-      setActiveTab('upload');
-    }
-  };
-
-  // Compile PDF client-side
-  const handleDownloadPDF = async () => {
-    if (rows.length === 0) return;
-    try {
-      setIsGenerating(true);
-      const doc = await generateLabelsPDF(layoutConfig, layers, rows, mapping);
-      doc.save(`labellr_print_${layoutConfig.preset.toLowerCase()}.pdf`);
-    } catch (err: any) {
-      alert('Error building print PDF: ' + err.message);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const selectedLayer = layers.find(l => l.id === selectedLayerId) || null;
-
+export default function LandingPage() {
   return (
-    <main className="flex h-screen bg-slate-50 text-slate-800 overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-cyan-100 selection:text-cyan-900 overflow-x-hidden">
       
-      {/* Side Control Panel */}
-      <aside className="w-[420px] shrink-0 border-r border-slate-200 bg-white flex flex-col h-full shadow-sm relative z-10">
-        
-        {/* Brand Header */}
-        <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 shadow-sm flex items-center justify-center bg-slate-50">
-              <img src="/logo.png" alt="Labellr Logo" className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold text-slate-850 uppercase tracking-wider flex items-center gap-1.5">
-                Labellr
-                <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full uppercase">
-                  Studio
-                </span>
-              </h1>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Physical Label Designer & PDF Compiler</p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={resetToDefaultSample}
-            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-650 hover:text-slate-900 text-[10px] font-bold flex items-center gap-1 transition-all border border-slate-200"
-            title="Reset to industry demo template"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Reset Demo
-          </button>
-        </div>
-
-        {/* Tab Navigation */}
-        <nav className="flex border-b border-slate-200 bg-slate-50/50 px-2">
-          <button
-            onClick={() => setActiveTab('upload')}
-            className={`py-3 px-2 flex-1 text-center text-[10px] font-bold border-b-2 transition-all flex flex-col items-center gap-1 ${
-              activeTab === 'upload'
-                ? 'border-slate-900 text-slate-900 bg-white'
-                : 'border-transparent text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            1. Ingestion
-          </button>
-
-          <button
-            onClick={() => setActiveTab('layout')}
-            className={`py-3 px-2 flex-1 text-center text-[10px] font-bold border-b-2 transition-all flex flex-col items-center gap-1 ${
-              activeTab === 'layout'
-                ? 'border-slate-900 text-slate-900 bg-white'
-                : 'border-transparent text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Sliders className="w-4 h-4" />
-            2. Physical
-          </button>
-
-          <button
-            onClick={() => setActiveTab('layers')}
-            className={`py-3 px-2 flex-1 text-center text-[10px] font-bold border-b-2 transition-all flex flex-col items-center gap-1 ${
-              activeTab === 'layers'
-                ? 'border-slate-900 text-slate-900 bg-white'
-                : 'border-transparent text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            3. Stack ({layers.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('editor')}
-            className={`py-3 px-2 flex-1 text-center text-[10px] font-bold border-b-2 transition-all flex flex-col items-center gap-1 ${
-              activeTab === 'editor'
-                ? 'border-slate-900 text-slate-900 bg-white'
-                : 'border-transparent text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            4. Edit Element
-          </button>
-
-          <button
-            onClick={() => setActiveTab('preflight')}
-            className={`py-3 px-2 flex-1 text-center text-[10px] font-bold border-b-2 transition-all flex flex-col items-center gap-1 ${
-              activeTab === 'preflight'
-                ? 'border-slate-900 text-slate-900 bg-white'
-                : 'border-transparent text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <ShieldAlert className="w-4 h-4" />
-            5. Pre-Flight
-          </button>
-        </nav>
-
-        {/* Dynamic Tab Body */}
-        <div className="flex-1 overflow-y-auto p-4 bg-white">
-          
-          {activeTab === 'upload' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div>
-                <h2 className="text-xs font-bold text-slate-850 uppercase tracking-wider mb-1">
-                  1. Spreadsheet Ingestion & Matching
-                </h2>
-                <p className="text-[10px] text-slate-400 leading-normal font-semibold">
-                  Upload your products list (CSV or Excel). Labellr will automatically scan headers and match them to label variable tokens.
-                </p>
-              </div>
-              <DataUpload
-                onDataLoaded={handleDataLoaded}
-                currentMapping={mapping}
-                onMappingChange={setMapping}
-                headers={headers}
-              />
-            </div>
-          )}
-
-          {activeTab === 'layout' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div>
-                <h2 className="text-xs font-bold text-slate-850 uppercase tracking-wider mb-1">
-                  2. Physical Dimensions & Gaps
-                </h2>
-                <p className="text-[10px] text-slate-400 leading-normal font-semibold">
-                  Define the structural target for physical print layout. Choose standard thermal roll widths or A4/A3 multi-row Avery matrices.
-                </p>
-              </div>
-              <LayoutSettings
-                config={layoutConfig}
-                onChange={handleLayoutConfigChange}
-              />
-            </div>
-          )}
-
-          {activeTab === 'layers' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div>
-                <h2 className="text-xs font-bold text-slate-850 uppercase tracking-wider mb-1">
-                  3. Content Elements Stack
-                </h2>
-                <p className="text-[10px] text-slate-400 leading-normal font-semibold">
-                  Add content elements inside the label workspace. Reorder stack indices to control drawing layers depth.
-                </p>
-              </div>
-              <LayersManager
-                layers={layers}
-                selectedLayerId={selectedLayerId}
-                onSelectLayer={handleSelectLayer}
-                onLayersChange={setLayers}
-                layoutConfig={layoutConfig}
-              />
-            </div>
-          )}
-
-          {activeTab === 'editor' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div>
-                <h2 className="text-xs font-bold text-slate-850 uppercase tracking-wider mb-1">
-                  4. Layer Property Inspector
-                </h2>
-                <p className="text-[10px] text-slate-400 leading-normal font-semibold">
-                  Highly customize position, widths, colors, fonts, and spreadsheet binding for the active element layer.
-                </p>
-              </div>
-              <LayerEditor
-                layer={selectedLayer}
-                onLayerChange={handleSingleLayerChange}
-                layoutConfig={layoutConfig}
-                headers={headers}
-              />
-            </div>
-          )}
-
-          {activeTab === 'preflight' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div>
-                <h2 className="text-xs font-bold text-slate-850 uppercase tracking-wider mb-1">
-                  5. Pre-flight Quality Assurance
-                </h2>
-                <p className="text-[10px] text-slate-400 leading-normal font-semibold">
-                  Labellr runs real-time syntax checking on barcodes, and calculates font overflow checks on all inventory rows.
-                </p>
-              </div>
-              <PreflightChecker
-                layers={layers}
-                rows={rows}
-                mapping={mapping}
-                layoutConfig={layoutConfig}
-                onSelectRowIndex={setSelectedRowIndex}
-                selectedRowIndex={selectedRowIndex}
-              />
-            </div>
-          )}
-
-        </div>
-
-        {/* Compile Footer Action */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50/50 space-y-2 shrink-0">
-          <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold px-1">
-            <span>Total printable items:</span>
-            <span className="font-extrabold text-slate-800">{rows.length} rows</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDownloadPDF}
-            disabled={rows.length === 0 || isGenerating}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-slate-900 hover:bg-slate-950 text-white font-bold text-xs shadow-sm transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin animate-duration-1000" />
-                Compiling Vector PDF...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                Download Print-Ready PDF
-              </>
-            )}
-          </button>
-        </div>
-      </aside>
-
-      {/* Center visual layout preview workspace */}
-      <section className="flex-1 bg-slate-100 flex flex-col h-full overflow-hidden">
-        
-        {/* Preview Header / Row selector bar */}
-        <div className="h-14 border-b border-slate-200 bg-white px-6 flex items-center justify-between shrink-0">
+      {/* Navigation */}
+      <motion.nav 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="fixed top-0 inset-x-0 border-b border-slate-200/50 bg-white/70 backdrop-blur-xl z-50"
+      >
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Preview Row:</span>
-            {rows.length > 0 ? (
-              <select
-                value={selectedRowIndex}
-                onChange={(e) => setSelectedRowIndex(parseInt(e.target.value) || 0)}
-                className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:border-slate-400"
+            <div className="w-8 h-8 rounded-[10px] overflow-hidden border border-slate-200/60 shadow-sm bg-white flex items-center justify-center p-0.5">
+              <img src="/logo.png" alt="Labellr Logo" className="w-full h-full object-cover rounded-md" />
+            </div>
+            <span className="text-lg font-black tracking-tight text-slate-900">LABELLR</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link 
+              href="/studio" 
+              className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors hidden sm:block"
+            >
+              Open Studio
+            </Link>
+            <Link 
+              href="/studio" 
+              className="text-sm font-bold bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 hover:scale-105 transition-all shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] active:scale-95 flex items-center gap-2"
+            >
+              Start Designing <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </motion.nav>
+
+      <main>
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 overflow-hidden">
+          {/* Background Elements */}
+          <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+            <div className="absolute w-[800px] h-[800px] bg-gradient-to-tr from-cyan-100/40 to-blue-50/40 rounded-full blur-3xl opacity-70 -top-40 -left-20 animate-pulse-slow" />
+            <div className="absolute w-[600px] h-[600px] bg-gradient-to-bl from-indigo-50/50 to-transparent rounded-full blur-3xl opacity-60 bottom-0 right-0" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_70%,transparent_100%)] opacity-30" />
+          </div>
+          
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="max-w-7xl mx-auto px-6 relative z-10 text-center flex flex-col items-center"
+          >
+            <motion.div variants={fadeUp} className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200/60 shadow-sm text-xs font-bold text-slate-600 tracking-wide uppercase">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              100% Client-Side Compiler
+            </motion.div>
+            
+            <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl font-black tracking-tighter text-slate-900 mb-6 max-w-4xl leading-[1.05]">
+              Industrial Label Design, <br className="hidden md:block"/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600">Zero Server Overhead.</span>
+            </motion.h1>
+            
+            <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-500 font-medium mb-10 max-w-2xl leading-relaxed">
+              Design pixel-perfect physical sticker sheets, thermal roll labels, and compile print-ready PDFs entirely in your browser. Absolute data privacy.
+            </motion.p>
+            
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <Link 
+                href="/studio" 
+                className="w-full sm:w-auto text-base font-bold bg-slate-900 text-white px-8 py-4 rounded-full hover:bg-slate-800 hover:scale-105 transition-all shadow-[0_8px_20px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_25px_rgba(0,0,0,0.2)] active:scale-95 flex items-center justify-center gap-2"
               >
-                {rows.map((row, idx) => {
-                  const label = String(row[mapping.title || 'Product_Title'] || row.title || row.name || `Item ${idx + 1}`);
-                  const sku = String(row[mapping.sku || 'Item_SKU'] || '');
-                  return (
-                    <option key={row.__rowId} value={idx}>
-                      {idx + 1}. {label.slice(0, 32)}{label.length > 32 ? '...' : ''} {sku ? `(${sku})` : ''}
-                    </option>
-                  );
-                })}
-              </select>
-            ) : (
-              <span className="text-xs text-slate-400 font-semibold">No sheet uploaded</span>
-            )}
-          </div>
+                Launch Labellr Studio <ArrowRight className="w-5 h-5" />
+              </Link>
+              <p className="text-sm text-slate-500 font-medium flex items-center justify-center gap-1.5 mt-2 sm:mt-0 px-4">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                No signup required
+              </p>
+            </motion.div>
 
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
-            <Sparkles className="w-3.5 h-3.5 text-slate-500 animate-pulse" />
-            <span>100% Client-Side Compiler</span>
+            {/* Floating UI Graphic */}
+            <motion.div 
+              variants={fadeUp}
+              className="mt-20 relative w-full max-w-4xl mx-auto perspective-1000"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent z-20" />
+              <motion.div 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="relative z-10 bg-white rounded-2xl border border-slate-200/60 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden flex flex-col md:flex-row transform rotate-x-12 scale-95 origin-bottom"
+              >
+                {/* Mock Sidebar */}
+                <div className="w-48 bg-slate-50 border-r border-slate-100 p-4 hidden md:flex flex-col gap-3">
+                  <div className="h-3 w-16 bg-slate-200 rounded-full mb-4" />
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} className="h-8 w-full bg-white border border-slate-200/50 rounded-lg shadow-sm" />
+                  ))}
+                </div>
+                {/* Mock Canvas */}
+                <div className="flex-1 p-8 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] flex items-center justify-center min-h-[300px]">
+                  <div className="w-64 h-40 bg-white shadow-xl border border-slate-200 rounded-sm relative p-4 flex flex-col justify-between transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                    <div className="flex justify-between">
+                      <div className="h-3 w-24 bg-slate-800 rounded-sm" />
+                      <div className="h-3 w-8 bg-red-500 rounded-sm" />
+                    </div>
+                    <div>
+                      <div className="h-2 w-full bg-slate-200 rounded-sm mb-1" />
+                      <div className="h-2 w-4/5 bg-slate-200 rounded-sm" />
+                    </div>
+                    {/* Mock Barcode */}
+                    <div className="flex gap-0.5 h-10 w-full justify-center">
+                      {[...Array(20)].map((_, i) => (
+                        <div key={i} className="h-full bg-slate-800" style={{ width: Math.random() > 0.5 ? '2px' : '4px', opacity: Math.random() > 0.2 ? 1 : 0 }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </section>
+
+        {/* Features Section */}
+        <section className="bg-white py-32 relative z-20">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-20">
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight"
+              >
+                Industrial infrastructure,<br/>consumer simplicity.
+              </motion.h2>
+              <p className="text-slate-500 font-medium max-w-2xl mx-auto text-lg">
+                Labellr replaces expensive desktop software with a fast, private, and precise browser-based engine.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <FeatureCard 
+                icon={<ShieldCheck className="w-6 h-6 text-indigo-600" />}
+                title="Absolute Data Privacy"
+                description="Your proprietary inventory, SKUs, and pricing data never leave your computer. 100% client-side architecture means zero cloud processing."
+                delay={0}
+              />
+              <FeatureCard 
+                icon={<Printer className="w-6 h-6 text-cyan-600" />}
+                title="Universal Printer Support"
+                description="Whether you're printing on A4 Avery sheets with a standard laser printer, or using continuous thermal rolls (Zebra, Dymo), Labellr outputs millimeter-precise PDFs."
+                delay={0.1}
+              />
+              <FeatureCard 
+                icon={<Zap className="w-6 h-6 text-amber-500" />}
+                title="Dynamic Vectors"
+                description="Instantly map your spreadsheet data to Vector Code-128 Barcodes, QR Codes, and conditional GHS hazard diamonds without any blurry raster images."
+                delay={0.2}
+              />
+              <FeatureCard 
+                icon={<Box className="w-6 h-6 text-emerald-600" />}
+                title="Auto-Fit Compliance"
+                description="Long ingredient lists or warnings automatically scale their font size to fit your physical label bounds perfectly, preventing overflow cuts."
+                delay={0.3}
+              />
+              <FeatureCard 
+                icon={<Layers className="w-6 h-6 text-rose-500" />}
+                title="Visual Layer Stack"
+                description="Drag, drop, and nudge elements with an intuitive layer system. Build complex dynamic templates in minutes instead of hours."
+                delay={0.4}
+              />
+              <FeatureCard 
+                icon={<Code2 className="w-6 h-6 text-slate-700" />}
+                title="Spreadsheet Ingestion"
+                description="Drop any CSV or Excel file. Labellr automatically maps your column headers to label template tokens, generating thousands of items instantly."
+                delay={0.5}
+              />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 py-16 text-center text-slate-400 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:24px_24px] opacity-10" />
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6 relative z-10">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center p-0.5 opacity-80">
+              <img src="/logo.png" alt="Labellr Logo" className="w-full h-full object-cover rounded-md mix-blend-screen" />
+            </div>
+            <span className="text-xl font-black text-white tracking-tighter uppercase">LABELLR</span>
+          </div>
+          <p className="text-sm font-medium max-w-md leading-relaxed text-slate-500">
+            The free, privacy-first, industrial-grade label design studio. Built by SystemIQ for modern logistics and manufacturing teams.
+          </p>
+          <div className="text-xs text-slate-600 font-semibold mt-4">
+            &copy; {new Date().getFullYear()} SystemIQ. All rights reserved.
           </div>
         </div>
+      </footer>
+    </div>
+  );
+}
 
-        {/* Scaled Preview Sheet container */}
-        <div className="flex-1 overflow-hidden relative">
-          <CanvasPreview
-            config={layoutConfig}
-            layers={layers}
-            rows={rows}
-            mapping={mapping}
-            selectedRowIndex={selectedRowIndex}
-            onSelectRowIndex={setSelectedRowIndex}
-            selectedLayerId={selectedLayerId}
-            onSelectLayer={handleSelectLayer}
-          />
-        </div>
-      </section>
-
-    </main>
+// Helper Component
+function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNode, title: string, description: string, delay: number }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, delay }}
+      className="flex flex-col gap-4 p-8 rounded-2xl bg-slate-50/50 border border-slate-200/60 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-slate-200 transition-all group"
+    >
+      <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center border border-slate-200/80 shadow-sm group-hover:scale-110 transition-transform duration-300">
+        {icon}
+      </div>
+      <h3 className="text-lg font-bold text-slate-900 tracking-tight">{title}</h3>
+      <p className="text-slate-500 leading-relaxed font-medium text-sm">
+        {description}
+      </p>
+    </motion.div>
   );
 }

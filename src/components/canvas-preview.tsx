@@ -106,6 +106,8 @@ function GHSSymbolSVG({ type }: { type: SafetySymbolType }) {
 let sharedCanvas: HTMLCanvasElement | null = null;
 let sharedCtx: CanvasRenderingContext2D | null = null;
 const complianceFontSizeCache = new Map<string, number>();
+const barcodeCache = new Map<string, any>();
+const qrCodeCache = new Map<string, any>();
 
 export default function CanvasPreview({
   config,
@@ -131,7 +133,10 @@ export default function CanvasPreview({
     if (isThermal) {
       return { width: config.width, height: config.height };
     }
-    // We assume Avery grids are laid out on standard A4 paper (210 x 297 mm)
+    const format = config.pageFormat || 'a4';
+    if (format === 'letter') return { width: 215.9, height: 279.4 };
+    if (format === 'legal') return { width: 215.9, height: 355.6 };
+    // Default A4 fallback
     return { width: 210, height: 297 };
   }, [isThermal, config]);
 
@@ -359,7 +364,12 @@ export default function CanvasPreview({
                 </div>
               );
             } else {
-              const barcode = generateBarcodeVectors(value, b.format);
+              const cacheKey = `${value}_${b.format}`;
+              let barcode = barcodeCache.get(cacheKey);
+              if (!barcode) {
+                barcode = generateBarcodeVectors(value, b.format);
+                barcodeCache.set(cacheKey, barcode);
+              }
               if (barcode.rects.length > 0) {
                 innerContent = (
                   <div className="w-full h-full flex flex-col justify-between">
@@ -405,12 +415,15 @@ export default function CanvasPreview({
             const q = layer as QrLayer;
             const val = interpolateTokens(q.template, row, mapping);
             if (val) {
-              let qrModules: any = null;
-              try {
-                const code = QRCode.create(val, { errorCorrectionLevel: 'M' });
-                qrModules = code.modules;
-              } catch (e) {
-                // ignore
+              let qrModules: any = qrCodeCache.get(val);
+              if (qrModules === undefined) {
+                try {
+                  const code = QRCode.create(val, { errorCorrectionLevel: 'M' });
+                  qrModules = code.modules;
+                  qrCodeCache.set(val, qrModules);
+                } catch (e) {
+                  qrCodeCache.set(val, null);
+                }
               }
 
               if (qrModules) {

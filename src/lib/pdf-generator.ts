@@ -180,10 +180,7 @@ export async function generateLabelsPDF(
     pageFormat = [layout.width, layout.height];
     orientation = layout.width > layout.height ? 'l' : 'p';
   } else {
-    pageFormat = layout.preset === 'avery_2_5' || layout.preset === 'avery_3_10' || layout.preset === 'custom' 
-      ? 'a4' 
-      : 'a4'; // standard fallback
-    // We can also allow customized page sizes. For sheets, we force A4 portrait for simplicity or match preset.
+    pageFormat = layout.pageFormat || 'a4'; // use standard selected sheet size
   }
 
   // Create jsPDF instance
@@ -376,7 +373,7 @@ async function drawSingleLabel(
       doc.setTextColor(t.color);
       doc.setFontSize(t.fontSize);
       
-      let fontName = 'Helvetica';
+      const fontName = 'Helvetica';
       let fontType = 'normal';
       if (t.fontStyle === 'bold') fontType = 'bold';
       else if (t.fontStyle === 'italic') fontType = 'oblique';

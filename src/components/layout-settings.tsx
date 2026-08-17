@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Sliders, Compass } from 'lucide-react';
-import { LayoutConfig, PresetType, PhysicalUnit } from '../lib/types';
+import { LayoutConfig, PresetType, PhysicalUnit, PageFormat } from '../lib/types';
 
 interface LayoutSettingsProps {
   config: LayoutConfig;
@@ -274,6 +274,21 @@ export default function LayoutSettings({ config, onChange }: LayoutSettingsProps
 
           {!isThermal && (
             <>
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">
+                  Sheet Format
+                </label>
+                <select
+                  value={config.pageFormat || 'a4'}
+                  onChange={(e) => updateVal('pageFormat', e.target.value as PageFormat)}
+                  className="w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
+                >
+                  <option value="a4">A4 (210 x 297mm)</option>
+                  <option value="letter">US Letter (8.5 x 11")</option>
+                  <option value="legal">US Legal (8.5 x 14")</option>
+                </select>
+              </div>
+
               <div>
                 <label className="text-[10px] font-bold text-slate-500 block mb-1">
                   Grid Columns
