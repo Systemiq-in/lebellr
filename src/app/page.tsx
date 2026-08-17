@@ -53,7 +53,7 @@ export default function LandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 overflow-hidden">
+        <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
           {/* Background Elements */}
           <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
             <div className="absolute w-[800px] h-[800px] bg-gradient-to-tr from-cyan-100/40 to-blue-50/40 rounded-full blur-3xl opacity-70 -top-40 -left-20 animate-pulse-slow" />
@@ -97,7 +97,7 @@ export default function LandingPage() {
             {/* Floating UI Graphic */}
             <motion.div 
               variants={fadeUp}
-              className="mt-20 relative w-full max-w-4xl mx-auto perspective-1000"
+              className="mt-12 relative w-full max-w-4xl mx-auto perspective-1000"
             >
               <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent z-20" />
               <motion.div 
@@ -137,9 +137,9 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section className="bg-white py-32 relative z-20">
+        <section className="bg-white py-20 relative z-20">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-20">
+            <div className="text-center mb-12">
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -153,7 +153,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-6">
               <FeatureCard 
                 icon={<ShieldCheck className="w-6 h-6 text-indigo-600" />}
                 title="Absolute Data Privacy"
@@ -196,7 +196,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 py-16 text-center text-slate-400 relative overflow-hidden">
+      <footer className="bg-slate-900 py-10 text-center text-slate-400 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:24px_24px] opacity-10" />
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6 relative z-10">
           <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
@@ -230,7 +230,7 @@ function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNod
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay }}
-      className="flex flex-col gap-4 p-8 rounded-2xl bg-slate-50/50 border border-slate-200/60 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-slate-200 transition-all group"
+      className="flex flex-col gap-3 p-6 rounded-2xl bg-slate-50/50 border border-slate-200/60 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-slate-200 transition-all group"
     >
       <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center border border-slate-200/80 shadow-sm group-hover:scale-110 transition-transform duration-300">
         {icon}
