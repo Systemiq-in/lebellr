@@ -379,7 +379,7 @@ export default function CanvasPreview({
                       height={b.includeText ? '75%' : '100%'}
                       preserveAspectRatio="none"
                     >
-                      {barcode.rects.map((r, ri) => (
+                      {barcode.rects.map((r: any, ri: number) => (
                         <rect
                           key={ri}
                           x={r.x}

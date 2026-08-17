@@ -11,7 +11,7 @@ interface LayoutSettingsProps {
 
 export default function LayoutSettings({ config, onChange }: LayoutSettingsProps) {
   // Preset definitions in physical metric values (mm)
-  const presets: Record<Exclude<PresetType, 'custom'>, Omit<LayoutConfig, 'preset' | 'unit' | 'sheetOffset' | 'showBleed'>> = {
+  const presets: Record<Exclude<PresetType, 'custom'>, Omit<LayoutConfig, 'preset' | 'unit' | 'sheetOffset' | 'showBleed' | 'pageFormat'>> = {
     thermal_2_1: {
       width: 50.8,
       height: 25.4,
